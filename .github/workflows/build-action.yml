@@ -25,13 +25,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: [GUI Private] Run ESLint
+        run: |
+          cd GUI.private
+          npm run lint
 
-      - name: Check Prettier formatting
+      - name: [GUI Private] Check Prettier formatting
         run: npm run format
 
-      - name: Build the project
+      - name: [GUI Private] Build the project
         run: npm run build
       - name: Checkout
         uses: actions/checkout@v3
