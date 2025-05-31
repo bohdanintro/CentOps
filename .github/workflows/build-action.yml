@@ -27,33 +27,53 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-#      - name: "[GUI Private] Run ESLint"
-#        run: |
-#          cd GUI.private
-#          npm run lint
-#        continue-on-error: true
-#
-#      - name: "[GUI Private] Check Prettier formatting"
-#        run: |
-#          cd GUI.private
-#          npm run format
-#        continue-on-error: true
+      - name: "[GUI Private] Run ESLint"
+        run: |
+          cd GUI.private
+          npm run lint
+        continue-on-error: true
 
-      - name: "[GUI Private] Build the project"
+      - name: "[GUI Private] Check Prettier formatting"
+        run: |
+          cd GUI.private
+          npm run format
+        continue-on-error: true
+
+      - name: "[GUI Private] Build"
         run: |
           cd GUI.private
           npm run build
 
+      - name: "[GUI Public] Run ESLint"
+        run: |
+          cd GUI.public
+          npm run lint
+        continue-on-error: true
+
+      - name: "[GUI Public] Check Prettier formatting"
+        run: |
+          cd GUI.public
+          npm run format
+        continue-on-error: true
+
+      - name: "[GUI Public] Build"
+        run: |
+          cd GUI.public
+          npm run build
+
       - name: Bump Patch Version
-        if: ${{ env.BRANCH == 'test' }}
+       # if: ${{ env.BRANCH == 'test' }}
+        if: ${{ env.BRANCH == 'github-action-build' }}
         run: npm run bump-patch
 
       - name: Sync Version
-        if: ${{ env.BRANCH != 'test' }}
+        #if: ${{ env.BRANCH != 'test' }}
+        if: ${{ env.BRANCH != 'github-action-build' }}
         run: npm run sync-version
 
       - name: Generate Changelog
-        if: ${{ env.BRANCH == 'main' }}
+        #if: ${{ env.BRANCH == 'main' }}
+        if: ${{ env.BRANCH == 'github-action-build' }}
         run: npm run changelog
 
       - name: Push changes to repo
@@ -69,7 +89,8 @@ jobs:
           awk -v branch="${{ env.BRANCH }}" ' /^[0-9a-zA-Z]+$/ { current_branch = $0; } current_branch == branch && /^[A-Z_]+=/{ print $0; }' release.env >> $GITHUB_ENV
 
       - name: Create Release
-        if: ${{ env.BRANCH == 'main' }}
+        #if: ${{ env.BRANCH == 'main' }}
+        if: ${{ env.BRANCH == 'github-action-build' }}
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}
