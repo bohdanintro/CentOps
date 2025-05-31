@@ -75,7 +75,17 @@ jobs:
 
       - name: Load environment variables
         run: |
-          awk -v branch="${{ env.BRANCH }}" ' /^[0-9a-zA-Z]+$/ { current_branch = $0; } current_branch == branch && /^[A-Z_]+=/{ print $0; }' release.env >> $GITHUB_ENV
+          # Extract matching section from release.env into GITHUB_ENV
+          awk -v branch="${{ env.BRANCH }}" '
+            /^[0-9a-zA-Z]+$/ { current_branch = $0; next }
+            current_branch == branch && /^[A-Z_]+=/{ print $0 }
+          ' release.env >> $GITHUB_ENV
+          
+          # Export loaded vars for use immediately in this step
+          source $GITHUB_ENV
+          
+          # Set VERSION env var using loaded MAJOR, MINOR, PATCH
+          echo "VERSION=v${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
 
       - name: Compose VERSION
         run: echo "VERSION=v${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}" >> $GITHUB_ENV
