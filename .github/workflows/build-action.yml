@@ -81,7 +81,7 @@ jobs:
           git config --global user.name "${{ secrets.ADMIN_NAME }}"
           git config --global user.email "${{ secrets.ADMIN_EMAIL }}"
           git add .
-          git commit -m "docs: update version [skip ci]"
+          git commit -m "docs(0): update version [skip ci]"
           git push
 
       - name: Load environment variables
