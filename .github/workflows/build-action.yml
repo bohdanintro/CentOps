@@ -71,6 +71,24 @@ jobs:
         if: ${{ env.BRANCH != 'github-action-build' }}
         run: npm run sync-version
 
+
+
+      - name: Load environment variables
+        run: |
+          awk -v branch="${{ env.BRANCH }}" ' /^[0-9a-zA-Z]+$/ { current_branch = $0; } current_branch == branch && /^[A-Z_]+=/{ print $0; }' release.env >> $GITHUB_ENV
+
+      - name: Compose VERSION
+        run: echo "VERSION=v${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}" >> $GITHUB_ENV
+
+      - name: Create Release
+        #if: ${{ env.BRANCH == 'main' }}
+        if: ${{ env.BRANCH == 'github-action-build' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          generate_release_notes: true
+          body_path: ${{ github.workspace }}/CHANGELOG.md
+
       - name: Generate Changelog
         #if: ${{ env.BRANCH == 'main' }}
         if: ${{ env.BRANCH == 'github-action-build' }}
@@ -83,16 +101,3 @@ jobs:
           git add .
           git commit -m "docs(0): update version [skip ci]" --no-verify
           git push
-
-      - name: Load environment variables
-        run: |
-          awk -v branch="${{ env.BRANCH }}" ' /^[0-9a-zA-Z]+$/ { current_branch = $0; } current_branch == branch && /^[A-Z_]+=/{ print $0; }' release.env >> $GITHUB_ENV
-
-      - name: Create Release
-        #if: ${{ env.BRANCH == 'main' }}
-        if: ${{ env.BRANCH == 'github-action-build' }}
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}
-          generate_release_notes: true
-          body_path: ${{ github.workspace }}/CHANGELOG.md
