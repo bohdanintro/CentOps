@@ -81,35 +81,39 @@ jobs:
             current_branch == branch && /^[A-Z_]+=/{ print $0 }
           ' release.env >> $GITHUB_ENV
           
-          # Export loaded vars for use immediately in this step
-          source $GITHUB_ENV
-          
-          # Set VERSION env var using loaded MAJOR, MINOR, PATCH
-          echo "VERSION=v${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
+           # Source into shell and export to GitHub Actions env
+           source temp_env
+           echo "MAJOR=$MAJOR" >> $GITHUB_ENV
+           echo "MINOR=$MINOR" >> $GITHUB_ENV
+           echo "PATCH=$PATCH" >> $GITHUB_ENV
+           echo "VERSION=v${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
+
+           # Debug output
+           echo "Set VERSION to v${MAJOR}.${MINOR}.${PATCH}"
 
       - name: Compose VERSION
         run: echo "VERSION=v${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}" >> $GITHUB_ENV
 
-      - name: Generate Changelog
-        #if: ${{ env.BRANCH == 'main' }}
-        if: ${{ env.BRANCH == 'github-action-build' }}
-        run: npm run changelog
-
-      - name: Push changes to repo
-        run: |
-          git config --global user.name "${{ secrets.ADMIN_NAME }}"
-          git config --global user.email "${{ secrets.ADMIN_EMAIL }}"
-          git add .
-          git commit -m "docs(0): update version [skip ci]" --no-verify
-          git push
-
-      - name: Create Release
-        #if: ${{ env.BRANCH == 'main' }}
-        if: ${{ env.BRANCH == 'github-action-build' }}
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ env.VERSION }}
-          generate_release_notes: true
-          body_path: ${{ github.workspace }}/CHANGELOG.md
+#      - name: Generate Changelog
+#        #if: ${{ env.BRANCH == 'main' }}
+#        if: ${{ env.BRANCH == 'github-action-build' }}
+#        run: npm run changelog
+#
+#      - name: Push changes to repo
+#        run: |
+#          git config --global user.name "${{ secrets.ADMIN_NAME }}"
+#          git config --global user.email "${{ secrets.ADMIN_EMAIL }}"
+#          git add .
+#          git commit -m "docs(0): update version [skip ci]" --no-verify
+#          git push
+#
+#      - name: Create Release
+#        #if: ${{ env.BRANCH == 'main' }}
+#        if: ${{ env.BRANCH == 'github-action-build' }}
+#        uses: softprops/action-gh-release@v1
+#        with:
+#          tag_name: v${{ env.VERSION }}
+#          generate_release_notes: true
+#          body_path: ${{ github.workspace }}/CHANGELOG.md
 
 
