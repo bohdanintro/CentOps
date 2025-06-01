@@ -83,19 +83,19 @@ jobs:
       - name: Compose VERSION
         run: echo "VERSION=v${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
 
-#      - name: Generate Changelog
-#        #if: ${{ env.BRANCH == 'main' }}
-#        if: ${{ env.BRANCH == 'github-action-build' }}
-#        run: npm run changelog
-#
-#      - name: Push changes to repo
-#        run: |
-#          git config --global user.name "${{ secrets.ADMIN_NAME }}"
-#          git config --global user.email "${{ secrets.ADMIN_EMAIL }}"
-#          git add .
-#          git commit -m "docs(0): update version [skip ci]" --no-verify
-#          git push
-#
+      - name: Generate Changelog
+        #if: ${{ env.BRANCH == 'main' }}
+        if: ${{ env.BRANCH == 'github-action-build' }}
+        run: npm run changelog
+
+      - name: Push changes to repo
+        run: |
+          git config --global user.name "${{ secrets.ADMIN_NAME }}"
+          git config --global user.email "${{ secrets.ADMIN_EMAIL }}"
+          git add .
+          git commit -m "docs(0): update version [skip ci]" --no-verify
+          git push
+
       - name: Create Release
         #if: ${{ env.BRANCH == 'main' }}
         if: ${{ env.BRANCH == 'github-action-build' }}
