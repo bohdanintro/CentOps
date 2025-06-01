@@ -24,76 +24,65 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: "[GUI Private] Run ESLint"
-        run: |
-          cd GUI.private
-          npm run lint
-        continue-on-error: true
-
-      - name: "[GUI Private] Check Prettier formatting"
-        run: |
-          cd GUI.private
-          npm run format
-        continue-on-error: true
-
-      - name: "[GUI Private] Build"
-        run: |
-          cd GUI.private
-          npm run build
-
-      - name: "[GUI Public] Run ESLint"
-        run: |
-          cd GUI.public
-          npm run lint
-        continue-on-error: true
-
-      - name: "[GUI Public] Check Prettier formatting"
-        run: |
-          cd GUI.public
-          npm run format
-        continue-on-error: true
-
-      - name: "[GUI Public] Build"
-        run: |
-          cd GUI.public
-          npm run build
-
-      - name: Bump Patch Version
-       # if: ${{ env.BRANCH == 'test' }}
-        if: ${{ env.BRANCH == 'github-action-build' }}
-        run: npm run bump-patch
-
-      - name: Sync Version
-        #if: ${{ env.BRANCH != 'test' }}
-        if: ${{ env.BRANCH != 'github-action-build' }}
-        run: npm run sync-version
+#      - name: Install dependencies
+#        run: npm install
+#
+#      - name: "[GUI Private] Run ESLint"
+#        run: |
+#          cd GUI.private
+#          npm run lint
+#        continue-on-error: true
+#
+#      - name: "[GUI Private] Check Prettier formatting"
+#        run: |
+#          cd GUI.private
+#          npm run format
+#        continue-on-error: true
+#
+#      - name: "[GUI Private] Build"
+#        run: |
+#          cd GUI.private
+#          npm run build
+#
+#      - name: "[GUI Public] Run ESLint"
+#        run: |
+#          cd GUI.public
+#          npm run lint
+#        continue-on-error: true
+#
+#      - name: "[GUI Public] Check Prettier formatting"
+#        run: |
+#          cd GUI.public
+#          npm run format
+#        continue-on-error: true
+#
+#      - name: "[GUI Public] Build"
+#        run: |
+#          cd GUI.public
+#          npm run build
+#
+#      - name: Bump Patch Version
+#       # if: ${{ env.BRANCH == 'test' }}
+#        if: ${{ env.BRANCH == 'github-action-build' }}
+#        run: npm run bump-patch
+#
+#      - name: Sync Version
+#        #if: ${{ env.BRANCH != 'test' }}
+#        if: ${{ env.BRANCH != 'github-action-build' }}
+#        run: npm run sync-version
 
 
 
       - name: Load environment variables
         run: |
-          # Extract matching section from release.env into GITHUB_ENV
-          awk -v branch="${{ env.BRANCH }}" '
-            /^[0-9a-zA-Z]+$/ { current_branch = $0; next }
-            current_branch == branch && /^[A-Z_]+=/{ print $0 }
-          ' release.env >> $GITHUB_ENV
-          
-           # Source into shell and export to GitHub Actions env
-           source temp_env
-           echo "MAJOR=$MAJOR" >> $GITHUB_ENV
-           echo "MINOR=$MINOR" >> $GITHUB_ENV
-           echo "PATCH=$PATCH" >> $GITHUB_ENV
-           echo "VERSION=v${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
+          awk -v branch="${{ env.BRANCH }}" ' /^[0-9a-zA-Z]+$/ { current_branch = $0; } current_branch == branch && /^[A-Z_]+=/{ print $0; }' release.env >> $GITHUB_ENV
 
-           # Debug output
-           echo "Set VERSION to v${MAJOR}.${MINOR}.${PATCH}"
+      - name: Print all environment variables
+        run: printenv
 
-      - name: Compose VERSION
-        run: echo "VERSION=v${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}" >> $GITHUB_ENV
-
+#      - name: Compose VERSION
+#        run: echo "VERSION=v${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}" >> $GITHUB_ENV
+#
 #      - name: Generate Changelog
 #        #if: ${{ env.BRANCH == 'main' }}
 #        if: ${{ env.BRANCH == 'github-action-build' }}
@@ -115,5 +104,5 @@ jobs:
 #          tag_name: v${{ env.VERSION }}
 #          generate_release_notes: true
 #          body_path: ${{ github.workspace }}/CHANGELOG.md
-
+#
 
