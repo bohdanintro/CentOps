@@ -83,14 +83,6 @@ jobs:
       - name: Compose VERSION
         run: echo "VERSION=v${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
 
-      - name: Print all environment variables
-        run: env
-
-      - name: Print GitHub environment file contents
-        run: cat $GITHUB_ENV
-
-
-#
 #      - name: Generate Changelog
 #        #if: ${{ env.BRANCH == 'main' }}
 #        if: ${{ env.BRANCH == 'github-action-build' }}
@@ -104,13 +96,13 @@ jobs:
 #          git commit -m "docs(0): update version [skip ci]" --no-verify
 #          git push
 #
-#      - name: Create Release
-#        #if: ${{ env.BRANCH == 'main' }}
-#        if: ${{ env.BRANCH == 'github-action-build' }}
-#        uses: softprops/action-gh-release@v1
-#        with:
-#          tag_name: v${{ env.VERSION }}
-#          generate_release_notes: true
-#          body_path: ${{ github.workspace }}/CHANGELOG.md
-#
+      - name: Create Release
+        #if: ${{ env.BRANCH == 'main' }}
+        if: ${{ env.BRANCH == 'github-action-build' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          generate_release_notes: true
+          body_path: ${{ github.workspace }}/CHANGELOG.md
+
 
