@@ -80,14 +80,16 @@ jobs:
             current_branch == branch && /^[A-Z_]+=/{ print $0 }
           ' release.env >> $GITHUB_ENV
 
+      - name: Compose VERSION
+        run: echo "VERSION=v${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
+
       - name: Print all environment variables
         run: env
 
       - name: Print GitHub environment file contents
         run: cat $GITHUB_ENV
 
-#      - name: Compose VERSION
-#        run: echo "VERSION=v${{ env.MAJOR }}.${{ env.MINOR }}.${{ env.PATCH }}" >> $GITHUB_ENV
+
 #
 #      - name: Generate Changelog
 #        #if: ${{ env.BRANCH == 'main' }}
