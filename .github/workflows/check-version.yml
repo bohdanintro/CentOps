@@ -2,7 +2,8 @@ name: Check Version
 
 on:
   push:
-    branches: ["test", "stage", "main"]
+    branches: ["docker-test"]
+    #branches: ["test", "stage", "main"]
   workflow_dispatch:
 
 env:
@@ -51,13 +52,13 @@ jobs:
         run: |
           echo "Building Docker image for branch: ${{ env.BRANCH }} major: ${{ env.MAJOR }} minor: ${{ env.MINOR }} patch: ${{ env.PATCH }}"
           cd GUI && docker image build --tag $DOCKER_TAG_CUSTOM --no-cache .
-        if: ${{ env.BRANCH == 'test' }}
+        if: ${{ env.BRANCH == 'docker-test' }}
 
       - name: Build Notification image
         run: |
           echo "Building Docker image for branch: ${{ env.BRANCH }} major: ${{ env.MAJOR }} minor: ${{ env.MINOR }} patch: ${{ env.PATCH }}"
           cd notification-server && docker image build --tag $DOCKER_TAG_CUSTOM-notification-node --no-cache .
-        if: ${{ env.BRANCH == 'test' }}
+        if: ${{ env.BRANCH == 'docker-test' }}
 
       - name: Log in to GitHub container registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
@@ -66,7 +67,7 @@ jobs:
         run: |
           echo "Pushing Docker image to GitHub Packages"
           docker push $DOCKER_TAG_CUSTOM
-        if: ${{ env.BRANCH == 'test' }}
+        if: ${{ env.BRANCH == 'docker-test' }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
