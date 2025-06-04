@@ -37,6 +37,7 @@ jobs:
           git add .
           git commit -m "docs: update version"
           git push
+        if: ${{ env.BRANCH == 'main' }}
 
       - name: Load environment variables
         run: |
