@@ -1,0 +1,87 @@
+declaration:
+  call: declare
+  version: 0.1
+  description: "Trigger app deployment"
+  method: post
+  accepts: json
+  returns: json
+  namespace: centops
+  allowlist:
+    headers:
+      - field: X-Vault-Token
+        type: string
+        description: "Vault authentication token"
+    body:
+      - field: appName
+        type: string
+        description: "The name of the Argo CD application to deploy"
+
+check_for_required_parameters:
+  switch:
+    - condition: ${incoming.body.appName == null || (incoming.headers != null && Object.keys(incoming.headers).find(h => h.toLowerCase() === 'x-vault-token') == null)}
+      next: return_incorrect_request
+  next: extract_request_data
+
+extract_request_data:
+  assign:
+    vault_token: ${incoming.headers[Object.keys(incoming.headers).find(h => h.toLowerCase() === 'x-vault-token')]}
+    appName: ${incoming.body.appName}
+  next: get_argocd_token_from_vault
+
+get_argocd_token_from_vault:
+  call: http.get
+  args:
+    url: "[#VAULT_ADDR]/v1/secret/deployments/argocd"
+    headers:
+      X-Vault-Token: ${vault_token}
+  result: vault_result
+  next: check_vault_response
+
+check_vault_response:
+  switch:
+    - condition: ${vault_result != null && vault_result.response != null && 200 <= vault_result.response.statusCodeValue && vault_result.response.statusCodeValue < 300 && vault_result.response.body.data.ARGO_CD_TOKEN != null}
+      next: extract_vault_data
+  next: return_vault_error
+
+extract_vault_data:
+  assign:
+    argocd_token: ${vault_result.response.body.data.ARGO_CD_TOKEN}
+  next: trigger_argo_cd_deployment
+
+#2nd step - call ArgoCD
+trigger_argo_cd_deployment:
+  call: http.post
+  args:
+    url: "[#ARGO_CD_SERVER]/api/v1/applications/${appName}/sync"
+    headers:
+      Authorization: "Bearer ${argocd_token}"
+      Content-Type: application/json
+    body:
+  result: argocd_run_result
+  next: check_argocd_response
+
+check_argocd_response:
+  switch:
+    - condition: ${200 <= argocd_run_result.response.statusCodeValue && argocd_run_result.response.statusCodeValue < 300}
+      next: return_success
+  next: return_vault_error
+
+return_success:
+  wrapper: false
+  return: ${argocd_run_result.response.body}
+  next: end
+
+return_vault_error:
+  assign:
+    has_response: ${argocd_run_result != null && argocd_run_result.response != null}
+    has_body: ${has_response && vault_result.response.body != null}
+    status_code: "${has_response ? argocd_run_result.response.statusCodeValue : 500}"
+    error_message: "${has_body ? argocd_run_result.response.body.errors : ['Internal server error']}"
+  status: ${status_code}
+  return: ${error_message}
+  next: end
+
+return_incorrect_request:
+  status: 400
+  return: "Required parameters missing: client_id or appName or appNamespace"
+  next: end
